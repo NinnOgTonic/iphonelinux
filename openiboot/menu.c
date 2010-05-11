@@ -43,7 +43,6 @@ static int imgConsoleX;
 static int imgConsoleY;
 
 static uint32_t* imgAndroidOS;
-static uint32_t* imgAndroidOS_unblended;
 static int imgAndroidOSWidth;
 static int imgAndroidOSHeight;
 static int imgAndroidOSX;
@@ -52,7 +51,6 @@ static int imgAndroidOSY;
 static uint32_t* imgiPhoneOSSelected;
 static uint32_t* imgConsoleSelected;
 static uint32_t* imgAndroidOSSelected;
-static uint32_t* imgAndroidOSSelected_unblended;
 
 static uint32_t* imgHeader;
 static int imgHeaderWidth;
@@ -128,43 +126,35 @@ int menu_setup(int timeout) {
 	imgiPhoneOSSelected = framebuffer_load_image(dataiPhoneOSSelectedPNG, dataiPhoneOSSelectedPNG_size, &imgiPhoneOSWidth, &imgiPhoneOSHeight, TRUE);
 	imgConsole = framebuffer_load_image(dataConsolePNG, dataConsolePNG_size, &imgConsoleWidth, &imgConsoleHeight, TRUE);
 	imgConsoleSelected = framebuffer_load_image(dataConsoleSelectedPNG, dataConsoleSelectedPNG_size, &imgConsoleWidth, &imgConsoleHeight, TRUE);
-	imgAndroidOS_unblended = framebuffer_load_image(dataAndroidOSPNG, dataAndroidOSPNG_size, &imgAndroidOSWidth, &imgAndroidOSHeight, TRUE);
-	imgAndroidOSSelected_unblended = framebuffer_load_image(dataAndroidOSSelectedPNG, dataAndroidOSSelectedPNG_size, &imgAndroidOSWidth, &imgAndroidOSHeight, TRUE);
+	imgAndroidOS = framebuffer_load_image(dataAndroidOSPNG, dataAndroidOSPNG_size, &imgAndroidOSWidth, &imgAndroidOSHeight, TRUE);
+	imgAndroidOSSelected = framebuffer_load_image(dataAndroidOSSelectedPNG, dataAndroidOSSelectedPNG_size, &imgAndroidOSWidth, &imgAndroidOSHeight, TRUE);
 	imgHeader = framebuffer_load_image(dataHeaderPNG, dataHeaderPNG_size, &imgHeaderWidth, &imgHeaderHeight, TRUE);
 
 	bufferPrintf("menu: images loaded\r\n");
 
-	imgiPhoneOSX = (FBWidth - imgiPhoneOSWidth) / 2;
-	imgiPhoneOSY = 84;
+	imgAndroidOSX = 16;
+	imgAndroidOSY = 270;
 
-	imgConsoleX = (FBWidth - imgConsoleWidth) / 2;
-	imgConsoleY = 207;
+	imgiPhoneOSX = 112;
+	imgiPhoneOSY = 270;
 
-	imgAndroidOSX = (FBWidth - imgAndroidOSWidth) / 2;
-	imgAndroidOSY = 330;
+	imgConsoleX = 208;
+	imgConsoleY = 270;
 
-	imgHeaderX = (FBWidth - imgHeaderWidth) / 2;
-	imgHeaderY = 17;
+	imgHeaderX = 0;
+	imgHeaderY = 0;
 
 	framebuffer_draw_image(imgHeader, imgHeaderX, imgHeaderY, imgHeaderWidth, imgHeaderHeight);
 
-	framebuffer_draw_rect_hgradient(0, 42, 0, 360, FBWidth, (FBHeight - 12) - 360);
-	framebuffer_draw_rect_hgradient(0x22, 0x22, 0, FBHeight - 12, FBWidth, 12);
-
 	framebuffer_setloc(0, 47);
-	framebuffer_setcolors(COLOR_WHITE, 0x222222);
+	framebuffer_setcolors(COLOR_WHITE, COLOR_BLACK);
+	framebuffer_print_force("\r\n");
+	framebuffer_print_force("Tap volume up/down at the side to select option.\r\n");
+	framebuffer_print_force("Tap the home button to boot selected option.\r\n");
+	framebuffer_print_force("Hold the power button for 2s to turn off your device.");
 	framebuffer_print_force(OPENIBOOT_VERSION_STR);
 	framebuffer_setcolors(COLOR_WHITE, COLOR_BLACK);
 	framebuffer_setloc(0, 0);
-
-	imgAndroidOS = malloc(imgAndroidOSWidth * imgAndroidOSHeight * sizeof(uint32_t));
-	imgAndroidOSSelected = malloc(imgAndroidOSWidth * imgAndroidOSHeight * sizeof(uint32_t));
-
-	framebuffer_capture_image(imgAndroidOS, imgAndroidOSX, imgAndroidOSY, imgAndroidOSWidth, imgAndroidOSHeight);
-	framebuffer_capture_image(imgAndroidOSSelected, imgAndroidOSX, imgAndroidOSY, imgAndroidOSWidth, imgAndroidOSHeight);
-
-	framebuffer_blend_image(imgAndroidOS, imgAndroidOSWidth, imgAndroidOSHeight, imgAndroidOS_unblended, imgAndroidOSWidth, imgAndroidOSHeight, 0, 0);
-	framebuffer_blend_image(imgAndroidOSSelected, imgAndroidOSWidth, imgAndroidOSHeight, imgAndroidOSSelected_unblended, imgAndroidOSWidth, imgAndroidOSHeight, 0, 0);
 
 	Selection = MenuSelectioniPhoneOS;
 
@@ -179,12 +169,17 @@ int menu_setup(int timeout) {
 
 	uint64_t startTime = timer_get_system_microtime();
 	while(TRUE) {
+#ifdef CONFIG_IPOD
 		if(buttons_is_pushed(BUTTONS_HOLD)) {
 			toggle(TRUE);
 			startTime = timer_get_system_microtime();
 			udelay(200000);
 		}
+#endif
 #ifndef CONFIG_IPOD
+		if(buttons_is_pushed(BUTTONS_HOLD)) {
+			pmu_poweroff();
+		}
 		if(!buttons_is_pushed(BUTTONS_VOLUP)) {
 			toggle(FALSE);
 			startTime = timer_get_system_microtime();
@@ -205,6 +200,7 @@ int menu_setup(int timeout) {
 		}
 		udelay(10000);
 	}
+
 
 	if(Selection == MenuSelectioniPhoneOS) {
 		Image* image = images_get(fourcc("ibox"));
