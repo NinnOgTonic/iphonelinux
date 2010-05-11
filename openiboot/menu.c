@@ -171,7 +171,7 @@ int menu_setup(int timeout) {
 	while(TRUE) {
 #ifdef CONFIG_IPOD
 		if(buttons_is_pushed(BUTTONS_HOLD)) {
-			toggle(TRUE);
+			toggle(FALSE);
 			startTime = timer_get_system_microtime();
 			udelay(200000);
 		}
@@ -181,12 +181,12 @@ int menu_setup(int timeout) {
 			pmu_poweroff();
 		}
 		if(!buttons_is_pushed(BUTTONS_VOLUP)) {
-			toggle(FALSE);
+			toggle(TRUE);
 			startTime = timer_get_system_microtime();
 			udelay(200000);
 		}
 		if(!buttons_is_pushed(BUTTONS_VOLDOWN)) {
-			toggle(TRUE);
+			toggle(FALSE);
 			startTime = timer_get_system_microtime();
 			udelay(200000);
 		}
