@@ -151,7 +151,7 @@ int menu_setup(int timeout) {
 	framebuffer_print_force("\r\n");
 	framebuffer_print_force("Tap volume up/down at the side to select option.\r\n");
 	framebuffer_print_force("Tap the home button to boot selected option.\r\n");
-	framebuffer_print_force("Tap the power button to turn off your device.");
+	framebuffer_print_force("Tap the power button to turn off your device.\r\n");
 	framebuffer_print_force(OPENIBOOT_VERSION_STR);
 	framebuffer_setcolors(COLOR_WHITE, COLOR_BLACK);
 	framebuffer_setloc(0, 0);
