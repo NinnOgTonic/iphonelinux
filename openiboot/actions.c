@@ -16,16 +16,16 @@
 /* this code is adapted from http://www.simtec.co.uk/products/SWLINUX/files/booting_article.html, which is distributed under the BSD license */
 
 /* list of possible tags */
-#define ATAG_NONE       0x00000000
-#define ATAG_CORE       0x54410001
-#define ATAG_MEM        0x54410002
-#define ATAG_VIDEOTEXT  0x54410003
-#define ATAG_RAMDISK    0x54410004
-#define ATAG_INITRD2    0x54420005
-#define ATAG_SERIAL     0x54410006
-#define ATAG_REVISION   0x54410007
-#define ATAG_VIDEOLFB   0x54410008
-#define ATAG_CMDLINE    0x54410009
+#define ATAG_NONE       	0x00000000
+#define ATAG_CORE       	0x54410001
+#define ATAG_MEM        	0x54410002
+#define ATAG_VIDEOTEXT 		0x54410003
+#define ATAG_RAMDISK    	0x54410004
+#define ATAG_INITRD2    	0x54420005
+#define ATAG_SERIAL     	0x54410006
+#define ATAG_REVISION   	0x54410007
+#define ATAG_VIDEOLFB   	0x54410008
+#define ATAG_CMDLINE    	0x54410009
 #define ATAG_IPHONE_NAND       0x54411001
 #define ATAG_IPHONE_WIFI       0x54411002
 #define ATAG_IPHONE_PROX_CAL   0x54411004
@@ -49,8 +49,8 @@ struct atag_mem {
 };
 
 struct atag_videotext {
-	uint8_t              x;
 	uint8_t              y;
+	uint8_t              x;
 	uint16_t             video_page;
 	uint8_t              video_mode;
 	uint8_t              video_cols;
@@ -417,7 +417,7 @@ void boot_linux(const char* args) {
 #ifndef NO_HFS
 
 
-void boot_linux_from_files2()
+void boot_linux_from_files2() //booting Android 2.2 from '/private/var/<image>2.img'
 {
 	int size;
 
@@ -448,7 +448,7 @@ void boot_linux_from_files2()
 	boot_linux("console=tty root=/dev/ram0 init=/init rw");
 }
 
-void boot_linux_from_files()
+void boot_linux_from_files() //booting Android 1.6 from '/private/var/<image>.img'
 {
 	int size;
 
