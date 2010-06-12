@@ -21,8 +21,6 @@ static int InterfaceVersion;
 static int MaxPacketSize;
 static int FamilyID;
 static int FlipNOP;
-static int SensorWidth;
-static int SensorHeight;
 static int SensorColumns;
 static int SensorRows;
 static int BCDVersion;
@@ -63,6 +61,7 @@ void multitouch_on()
 
 		udelay(15000);
 		MultitouchOn = TRUE;
+        fingerData=0;
 	}
 }
 
@@ -642,7 +641,7 @@ static void newPacket(const uint8_t* data, int len)
 	if(header->headerLen < 12)
 		bufferPrintf("multitouch: no finger data in frame\r\n");
 
-	bufferPrintf("------START------\r\n");
+    bufferPrintf("------START------\r\n");
 
 	int i;
 	for(i = 0; i < header->numFingers; ++i)
@@ -658,8 +657,8 @@ static void newPacket(const uint8_t* data, int len)
 		//hexdump((uint32_t) finger, sizeof(FingerData));
 		finger = (FingerData*) (((uint8_t*) finger) + header->fingerDataLen);
 	}
-
-	bufferPrintf("-------END-------\r\n");
+	fingerData = (FingerData*)(data + (header->headerLen));
+    bufferPrintf("-------END-------\r\n");
 }
 
 static int readFrameLength(int* len)
@@ -955,8 +954,8 @@ int multitouch_setup(const uint8_t* constructedFirmware, int constructedFirmware
 		goto out_free_srp;
 	}
 
-	SensorWidth = *((uint32_t*)&reportBuffer[0]);
-	SensorHeight = *((uint32_t*)&reportBuffer[4]);
+    SensorWidth = (9000 - *((uint32_t*)&reportBuffer[0])) * 84 / 73;
+    SensorHeight = (13850 - *((uint32_t*)&reportBuffer[4])) * 84 / 73;
 
 	bufferPrintf("Family ID                : 0x%x\r\n", FamilyID);
 	bufferPrintf("Sensor rows              : 0x%x\r\n", SensorRows);
@@ -985,7 +984,7 @@ int multitouch_setup(const uint8_t* constructedFirmware, int constructedFirmware
 	GotATN = 0;
 	CurNOP = 1;
 
-	while(TRUE)
+	/*while(TRUE)
 	{
 		EnterCriticalSection();
 		if(!GotATN)
@@ -997,7 +996,7 @@ int multitouch_setup(const uint8_t* constructedFirmware, int constructedFirmware
 		LeaveCriticalSection();
 
 		readFrame();
-	}
+	}*/
 
 	return 0;
 
@@ -1036,4 +1035,21 @@ int mt_spi_txrx(const MTSPISetting* setting, const uint8_t* outBuffer, int outLe
 	int ret = spi_txrx(MT_SPI, outBuffer, outLen, inBuffer, inLen, TRUE);
 	gpio_pin_output(MT_SPI_CS, 1);
 	return ret;
+}
+
+void multitouch_run()
+{
+    while(GotATN>0)
+    {
+        EnterCriticalSection();
+        if(!GotATN)
+        {
+            LeaveCriticalSection();
+            continue;
+        }
+        --GotATN;
+        LeaveCriticalSection();
+        
+        readFrame();
+    }
 }

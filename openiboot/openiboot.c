@@ -41,6 +41,7 @@
 #include "wmcodec.h"
 #include "wdt.h"
 #include "als.h"
+#include "multitouch.h"
 
 int received_file_size;
 
@@ -68,7 +69,20 @@ void OpenIBootStart() {
 
 	framebuffer_setdisplaytext(TRUE);
 	framebuffer_clear();
-
+    //enable multitouch before displaying menu, only 3g first
+    framebuffer_setdisplaytext(FALSE);
+    nand_setup();
+    fs_setup();
+    int size;
+    size = fs_extract(1, "/firmware/zephyr2.bin", (void*) 0x09000000);
+    if(size < 0)
+    {
+        bufferPrintf("Cannot find zephyr bin.\r\n");
+        return;
+    }
+    
+    multitouch_setup((uint8_t*) 0x09000000, size);
+    
 #ifndef SMALL
 #ifndef NO_STBIMAGE
 	const char* hideMenu = nvram_getvar("opib-hide-menu");
